@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: opendeploy-org/ods-image-builder
+          ref: 09a2acaf42ba9dd4dc52b23140386d65bdf63962
           path: ods-image-builder
 
       - name: Setup python
@@ -62,5 +63,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: proof
+          name: output
           path: ${{ runner.temp }}/output/*
