@@ -144,8 +144,6 @@ def main():
         "tmpFolder": os.environ.get("TMP_FOLDER")
     }
 
-    print(params)
-
     launch_info = None
     boto3_session = boto3.Session(
         aws_access_key_id=params["awsAccessKey"],
