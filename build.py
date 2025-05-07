@@ -71,6 +71,8 @@ def wait_for_vm_ready(ec2_client, instance_id, timeout=90):
     try:
         start_time = time.time()
         while time.time() - start_time < timeout:
+            time.sleep(5)
+
             # check instance state
             state_resp = ec2_client.describe_instance_status(
                 InstanceIds=[instance_id],
@@ -78,7 +80,6 @@ def wait_for_vm_ready(ec2_client, instance_id, timeout=90):
             )
 
             if state_resp["InstanceStatuses"][0]["InstanceState"]["Name"] != "running":
-                time.sleep(5)
                 continue
 
             # check console output
@@ -91,8 +92,6 @@ def wait_for_vm_ready(ec2_client, instance_id, timeout=90):
                     f"Error occurred during cloud-init execution")
             if "ODS complete" in output:
                 return
-
-            time.sleep(5)
 
         raise RuntimeError(f"Timeout while waiting for the VM to become ready")
     except Exception as e:
