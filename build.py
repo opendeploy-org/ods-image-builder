@@ -9,7 +9,6 @@ import requests
 
 SETUP_SCRIPT_FILENAME = "setup.sh"
 CLOUD_INIT_FILE = "cloud-init.yaml"
-BUILD_STATEMENT_FILE = "statement.json"
 
 
 def download_setup_script(setup_script_url, setup_script_file):
@@ -141,7 +140,7 @@ def main():
         "setupScriptHash": os.environ.get("SETUP_SECRIPT_HASH"),
         "awsAccessKey": os.environ.get("AWS_ACCESS_KEY"),
         "awsAccessSecret": os.environ.get("AWS_ACCESS_SECRET"),
-        "tmpFolder": os.environ.get("TMP_FOLDER")
+        "outputFolder": os.environ.get("OUTPUT_FOLDER")
     }
 
     launch_info = None
@@ -155,7 +154,7 @@ def main():
     try:
         # download the setup script and verify its hash
         print("Checking setup script")
-        setup_script_path = Path(params["tmpFolder"]) / SETUP_SCRIPT_FILENAME
+        setup_script_path = Path(params["outputFolder"]) / SETUP_SCRIPT_FILENAME
         download_setup_script(params["setupScriptURL"], setup_script_path)
         setup_script_hash = get_setup_script_hash(setup_script_path)
 
@@ -186,7 +185,7 @@ def main():
             "imageID": image_id,
             "setupScriptHash": setup_script_hash
         }
-        with open(Path(params["tmpFolder"]) / BUILD_STATEMENT_FILE, "w") as json_file:
+        with open(Path(params["outputFolder"]) / f"{image_id}.json", "w") as json_file:
             json.dump(statement, json_file)
     except Exception as e:
         print(e)
