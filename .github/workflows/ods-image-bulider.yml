@@ -1,0 +1,60 @@
+name: ODS Image Builder
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        required: true
+        type: string
+      SETUP_SECRIPT_URL:
+        required: true
+        type: string
+      SETUP_SECRIPT_HASH:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY:
+        required: true
+      AWS_ACCESS_SECRET:
+        required: true
+
+jobs:
+  build-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build image
+        run: python build.py
+        env:
+          AWS_REGION: ${{ inputs.AWS_REGION }}
+          SETUP_SECRIPT_URL: ${{ inputs.SETUP_SECRIPT_URL }}
+          SETUP_SECRIPT_HASH: ${{ inputs.SETUP_SECRIPT_HASH }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_ACCESS_SECRET: ${{ secrets.AWS_ACCESS_SECRET }}
+          TMP_FOLDER: ${{ runner.temp }}
+
+      - name: Generate build provenance
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ runner.temp }}/statement.json
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist.zip
+          path: |
+            ${{ runner.temp }}/statement.json
+            ${{ runner.temp }}/setup.sh
+            ${{ steps.attest.outputs.bundle-path }}

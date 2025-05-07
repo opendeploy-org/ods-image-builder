@@ -1,0 +1,49 @@
+#cloud-config
+write_files:
+  - path: /usr/local/bin/init.sh
+    permissions: "0755"
+    owner: ec2-user:ec2-user
+    content: |
+      #!/bin/sh
+      set -e
+
+      trap 'echo "OSD fail"' ERR
+
+      SETUP_SCRIPT_URL="DUMMY_SETUP_SCRIPT_URL"
+      SETUP_SCRIPT_HASH="DUMMY_SETUP_SCRIPT_HASH"
+      SCRIPT_PATH="/usr/local/bin/setup.sh"
+
+      curl -fsSL "$SETUP_SCRIPT_URL" -o "$SCRIPT_PATH"
+      echo "${SETUP_SCRIPT_HASH}  $SCRIPT_PATH" | sha256sum -c -
+
+      chmod +x "$SCRIPT_PATH"
+
+      cat <<EOF > /etc/systemd/system/custom-setup.service
+      [Unit]
+      Description=Run custom setup script
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=$SCRIPT_PATH
+      ExecStartPost=/bin/rm -f /etc/systemd/system/custom-setup.service
+      ExecStartPost=/bin/systemctl daemon-reload
+      RemainAfterExit=no
+
+      [Install]
+      WantedBy=multi-user.target
+      EOF
+
+      systemctl daemon-reexec
+      systemctl daemon-reload
+      systemctl enable custom-setup.service
+
+      echo "ODS Success"
+bootcmd:
+  - [ rpm, --erase, amazon-ssm-agent ]
+  - [ yum, -y, remove, ec2-instance-connect ]
+  - [ yum, -y, remove, openssh ]
+  - [ touch, /etc/cloud/cloud-init.disabled ]
+runcmd:
+  - [/usr/local/bin/init.sh]
