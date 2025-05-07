@@ -13,11 +13,13 @@ write_files:
       SETUP_SCRIPT_HASH="DUMMY_SETUP_SCRIPT_HASH"
       SCRIPT_PATH="/usr/local/bin/setup.sh"
 
+      # download and check setup script
       curl -fsSL "$SETUP_SCRIPT_URL" -o "$SCRIPT_PATH"
       echo "${SETUP_SCRIPT_HASH}  $SCRIPT_PATH" | sha256sum -c -
 
       chmod +x "$SCRIPT_PATH"
 
+      # configure custom-setup service
       cat <<EOF > /etc/systemd/system/custom-setup.service
       [Unit]
       Description=Run custom setup script
@@ -39,7 +41,7 @@ write_files:
       systemctl daemon-reload
       systemctl enable custom-setup.service
 
-      echo "ODS Success"
+      echo "ODS complete"
 bootcmd:
   - [ rpm, --erase, amazon-ssm-agent ]
   - [ yum, -y, remove, ec2-instance-connect ]

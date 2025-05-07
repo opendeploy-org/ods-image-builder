@@ -33,6 +33,14 @@ def get_setup_script_hash(setup_script_file):
 def get_base_image_id(region):
     if region == "us-east-1":
         return "ami-0f88e80871fd81e91"
+    elif region == "us-east-2":
+        return "ami-058a8a5ab36292159"
+    elif region == "us-west-1":
+        return "ami-04fc83311a8d478df"
+    elif region == "us-west-2":
+        return "ami-07b0c09aab6e66ee9"
+    elif region == "ap-northeast-1":
+        return "ami-0c2da9ee6644f16e5"
     else:
         raise Exception(f"This region is currently unsupported")
 
@@ -81,7 +89,7 @@ def wait_for_vm_ready(ec2_client, instance_id, timeout=90):
             if "OSD fail" in output:
                 raise RuntimeError(
                     f"Error occurred during cloud-init execution")
-            if "ODS Success" in output:
+            if "ODS complete" in output:
                 return
 
             time.sleep(5)
@@ -143,6 +151,7 @@ def main():
         "outputFolder": os.environ.get("OUTPUT_FOLDER")
     }
 
+    build_success = False
     launch_info = None
     boto3_session = boto3.Session(
         aws_access_key_id=params["awsAccessKey"],
@@ -154,7 +163,8 @@ def main():
     try:
         # download the setup script and verify its hash
         print("Checking setup script")
-        setup_script_path = Path(params["outputFolder"]) / SETUP_SCRIPT_FILENAME
+        setup_script_path = Path(
+            params["outputFolder"]) / SETUP_SCRIPT_FILENAME
         download_setup_script(params["setupScriptURL"], setup_script_path)
         setup_script_hash = get_setup_script_hash(setup_script_path)
 
@@ -187,11 +197,16 @@ def main():
         }
         with open(Path(params["outputFolder"]) / f"{image_id}.json", "w") as json_file:
             json.dump(statement, json_file)
+
+        build_success = True
     except Exception as e:
         print(e)
     finally:
         print("Cleaning resources")
         terminate_vm_instance(ec2_client, launch_info["InstanceId"])
+
+    if not build_success:
+        exit(1)
 
 
 if __name__ == "__main__":
