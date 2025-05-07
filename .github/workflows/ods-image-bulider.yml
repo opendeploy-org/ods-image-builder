@@ -23,8 +23,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout ods-image-builder
         uses: actions/checkout@v4
+        with:
+          repository: opendeploy-org/ods-image-builder
+          path: ods-image-builder
 
       - name: Setup python
         uses: actions/setup-python@v5
@@ -32,10 +35,10 @@ jobs:
           python-version: "3.13"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r ods-image-builder/requirements.txt
 
       - name: Build image
-        run: python build.py
+        run: python ods-image-builder/build.py
         env:
           AWS_REGION: ${{ inputs.AWS_REGION }}
           SETUP_SECRIPT_URL: ${{ inputs.SETUP_SECRIPT_URL }}
