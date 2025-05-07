@@ -39,7 +39,7 @@ jobs:
 
       - name: Build image
         run: |
-          mkmdir ${{ runner.temp }}/output
+          mkdir ${{ runner.temp }}/output
           python ods-image-builder/build.py
         env:
           AWS_REGION: ${{ inputs.AWS_REGION }}
