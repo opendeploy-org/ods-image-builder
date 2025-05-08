@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import random
 import hashlib
 from pathlib import Path
 
@@ -100,9 +101,10 @@ def wait_for_vm_ready(ec2_client, instance_id, timeout=90):
 
 def create_image_from_vm(ec2_client, instance_id):
     try:
+        ami_name = "ODS-" + "".join(random.choices("0123456789", k=4))
         response = ec2_client.create_image(
             InstanceId=instance_id,
-            Name=f"{instance_id}-ami",
+            Name=ami_name,
             NoReboot=True
         )
 
