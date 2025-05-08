@@ -87,7 +87,7 @@ def wait_for_vm_ready(ec2_client, instance_id, timeout=90):
                 InstanceId=instance_id, Latest=True)
             output = output_resp["Output"]
 
-            if "OSD fail" in output:
+            if "ODS fail" in output:
                 raise RuntimeError(
                     f"Error occurred during cloud-init execution")
             if "ODS complete" in output:

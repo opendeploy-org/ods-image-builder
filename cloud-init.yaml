@@ -7,7 +7,7 @@ write_files:
       #!/bin/sh
       set -e
 
-      trap 'echo "OSD fail"' ERR
+      trap 'echo "ODS fail"' ERR
 
       SETUP_SCRIPT_URL="DUMMY_SETUP_SCRIPT_URL"
       SETUP_SCRIPT_HASH="DUMMY_SETUP_SCRIPT_HASH"
